@@ -1,0 +1,150 @@
+/* Base */
+body {
+  font-family: Arial, sans-serif;
+  background: #f5f7fb;
+  margin: 0;
+  color: #222;
+}
+
+/* Navbar */
+.header {
+  background: #ffffff;
+  border-bottom: 1px solid #e6e9ef;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.brand {
+  font-weight: 700;
+  font-size: 18px;
+  color: #007bff;
+  text-decoration: none;
+}
+
+.navlinks {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+}
+
+.navlinks a {
+  color: #333;
+  text-decoration: none;
+  font-weight: 500;
+  padding: 8px 10px;
+  border-radius: 6px;
+}
+
+.navlinks a:hover {
+  background: #f0f4ff;
+}
+
+.profile-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #f7f9fc;
+  font-weight: 600;
+}
+
+.profile-btn:hover {
+  background: #eef3ff;
+}
+
+/* profile dropdown */
+.profile-dropdown {
+  position: absolute;
+  right: 20px;
+  top: 56px;
+  background: white;
+  min-width: 160px;
+  border-radius: 8px;
+  box-shadow: 0 6px 20px rgba(26, 34, 59, 0.12);
+  border: 1px solid #e6e9ef;
+  display: none;
+  flex-direction: column;
+  padding: 8px 0;
+  z-index: 200;
+}
+
+.profile-dropdown a, .profile-dropdown button {
+  padding: 10px 14px;
+  text-align: left;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: #333;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.profile-dropdown a:hover, .profile-dropdown button:hover {
+  background: #f6f8ff;
+}
+
+/* Container & cards (keep your previous) */
+.container {
+  width: 92%;
+  max-width: 900px;
+  margin: 24px auto;
+  padding: 6px;
+}
+
+.card {
+  background: #fff;
+  border-radius: 8px;
+  padding: 18px;
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.06);
+  margin-bottom: 18px;
+}
+
+/* grid for gifts */
+.gift-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+}
+
+/* gift card */
+.gift-card {
+  background: white;
+  border-radius: 10px;
+  padding: 14px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+}
+
+/* forms */
+input, textarea, button {
+  width: 100%;
+  padding: 10px;
+  margin-top: 8px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+  border: 1px solid #d6dbe8;
+  font-size: 14px;
+}
+
+button {
+  background: #007bff;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #0056d2;
+}
+
+/* small utils */
+.msg.success { color: green; }
+.msg.error { color: red; }
+.link-inline { color:#007bff; text-decoration:none; }

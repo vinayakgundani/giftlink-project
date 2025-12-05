@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Register</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+  <%- include("partials/navbar") %>
+
+
+  <div class="container">
+    <div class="card" style="max-width:420px; margin:auto;">
+      <h2>Create Account</h2>
+
+      <form id="registerForm">
+        <label>Name</label>
+        <input id="name" type="text" required>
+
+        <label>Email</label>
+        <input id="email" type="email" required>
+
+        <label>Password</label>
+        <input id="password" type="password" required>
+
+        <button type="submit">Register</button>
+      </form>
+
+      <p id="msg" class="msg"></p>
+      <a href="/">Back</a>
+    </div>
+  </div>
+
+<script>
+document.getElementById("registerForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const name = document.getElementById("name").value;
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+
+  const res = await fetch("http://localhost:5000/api/auth/register", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name, email, password })
+  });
+
+  const result = await res.json();
+  const msg = document.getElementById("msg");
+  if (res.ok) {
+    msg.innerText = "User registered successfully";
+    msg.className = "msg success";
+  } else {
+    msg.innerText = result.message;
+    msg.className = "msg error";
+  }
+});
+</script>
+
+</body>
+</html>
