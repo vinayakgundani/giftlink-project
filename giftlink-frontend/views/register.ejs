@@ -7,54 +7,59 @@
 
 <body>
 
-<div class="card">
-  <h2>Create Account</h2>
+<%- include("partials/navbar") %>
+
+<div class="card" style="max-width:420px; margin:60px auto;">
+  <h2 style="text-align:center;">Register</h2>
 
   <form id="registerForm">
-    <label>Name:</label>
-    <input id="name" type="text" required>
+    <label for="name">Name:</label>
+    <input id="name" name="name" type="text" required />
 
-    <label>Email:</label>
-    <input id="email" type="email" required>
+    <label for="email">Email:</label>
+    <input id="email" name="email" type="email" required />
 
-    <label>Password:</label>
-    <input id="password" type="password" required>
+    <label for="password">Password:</label>
+    <input id="password" name="password" type="password" required />
 
-    <button type="submit">Register</button>
+    <button type="submit">Create Account</button>
   </form>
 
   <p id="msg" class="msg"></p>
-  <a href="/">Back</a>
+
+  <div style="text-align:center; margin-top:12px;">
+    <a href="/">Back</a>
+  </div>
 </div>
 
 <script>
-const API = "<%= process.env.BACKEND_URL %>";
+  const API = "<%= process.env.BACKEND_URL || 'http://localhost:5000' %>";
 
-document.getElementById("registerForm").addEventListener("submit", async (e) => {
-  e.preventDefault();
+  document.getElementById("registerForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
 
-  const name = document.getElementById("name").value;
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
+    const name = document.getElementById("name").value.trim();
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value;
 
-  const res = await fetch(`${API}/api/auth/register`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ name, email, password })
+    const res = await fetch(`${API}/api/auth/register`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, email, password })
+    });
+
+    const data = await res.json();
+    const msg = document.getElementById("msg");
+
+    if (res.ok) {
+      msg.innerText = "Registration successful — redirecting to login...";
+      msg.className = "msg success";
+      setTimeout(() => window.location.href = "/login", 900);
+    } else {
+      msg.innerText = data.message || "Registration failed";
+      msg.className = "msg error";
+    }
   });
-
-  const data = await res.json();
-  const msg = document.getElementById("msg");
-
-  if (res.ok) {
-    msg.innerText = "Registration successful!";
-    msg.className = "msg success";
-    setTimeout(() => window.location.href = "/login", 1000);
-  } else {
-    msg.innerText = data.message;
-    msg.className = "msg error";
-  }
-});
 </script>
 
 </body>

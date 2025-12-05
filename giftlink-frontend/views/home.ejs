@@ -4,17 +4,22 @@
   <title>GiftLink</title>
   <link rel="stylesheet" href="/style.css">
 </head>
+
 <body>
 
 <%- include("partials/navbar") %>
 
+<div class="container">
+  <h1 style="text-align:center;">Welcome to GiftLink 🎁</h1>
 
-  <div class="container">
-    <div class="card">
-      <h1 style="margin-top:0;">Welcome to GiftLink 🎁</h1>
-      <p>Quickly browse and add gifts. Use the profile button (top-right) when logged in.</p>
-    </div>
+  <p style="text-align:center;">Your personal gift management app</p>
+
+  <div style="text-align:center; margin-top:20px;">
+    <a href="/register">Register</a> |
+    <a href="/login">Login</a> |
+    <a href="/gifts">View Gifts</a>
   </div>
+</div>
 
 </body>
 </html>

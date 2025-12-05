@@ -13,6 +13,31 @@
       max-width: 400px;
       box-shadow: 0 3px 10px rgba(0,0,0,0.15);
     }
+
+    .add-card {
+      background: #e8f4ff;
+      padding: 20px;
+      margin: 20px auto;
+      max-width: 450px;
+      border-radius: 10px;
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      padding: 10px;
+      background: #007bff;
+      border: none;
+      border-radius: 6px;
+      color: white;
+      cursor: pointer;
+    }
   </style>
 </head>
 
@@ -21,6 +46,19 @@
 <%- include("partials/navbar") %>
 
 <h2 style="text-align:center;">Available Gifts</h2>
+
+<!-- ADD NEW GIFT FORM -->
+<div class="add-card">
+  <h3>Add New Gift</h3>
+
+  <input id="giftName" placeholder="Gift Name">
+  <input id="giftCategory" placeholder="Category">
+  <textarea id="giftDescription" placeholder="Description"></textarea>
+
+  <button onclick="addGift()">Add Gift</button>
+
+  <p id="addMsg" style="margin-top:10px;"></p>
+</div>
 
 <div style="max-width:600px; margin:auto;">
   <% if (gifts.length === 0) { %>
@@ -35,6 +73,44 @@
     </div>
   <% }) %>
 </div>
+
+<script>
+const API = "http://localhost:5000"; // change to Render later
+
+async function addGift() {
+  const name = document.getElementById("giftName").value;
+  const category = document.getElementById("giftCategory").value;
+  const description = document.getElementById("giftDescription").value;
+  const msg = document.getElementById("addMsg");
+
+  const token = localStorage.getItem("token");
+  if (!token) {
+    msg.innerText = "You must be logged in!";
+    msg.style.color = "red";
+    return;
+  }
+
+  const res = await fetch(`${API}/api/gifts`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + token
+    },
+    body: JSON.stringify({ name, category, description })
+  });
+
+  const result = await res.json();
+
+  if (res.ok) {
+    msg.innerText = "Gift added!";
+    msg.style.color = "green";
+    setTimeout(() => location.reload(), 600);
+  } else {
+    msg.innerText = result.message || "Error adding gift";
+    msg.style.color = "red";
+  }
+}
+</script>
 
 </body>
 </html>

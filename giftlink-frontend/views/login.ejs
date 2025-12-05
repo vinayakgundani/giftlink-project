@@ -1,29 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Login</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+
+<body>
+
+<%- include("partials/navbar") %>
+
+<div class="card" style="max-width:420px; margin:60px auto;">
+  <h2 style="text-align:center;">Login</h2>
+
+  <form id="loginForm">
+    <label for="email">Email:</label>
+    <input id="email" name="email" type="email" required />
+
+    <label for="password">Password:</label>
+    <input id="password" name="password" type="password" required />
+
+    <button type="submit">Login</button>
+  </form>
+
+  <p id="msg" class="msg"></p>
+
+  <div style="text-align:center; margin-top:12px;">
+    <a href="/">Back</a>
+  </div>
+</div>
+
 <script>
-const API = "<%= process.env.BACKEND_URL %>";
+  // NOTE: this value will be replaced by render env when deployed.
+  // Locally it falls back to localhost.
+  const API = "<%= process.env.BACKEND_URL || 'http://localhost:5000' %>";
 
-document.getElementById("loginForm").addEventListener("submit", async (e) => {
-  e.preventDefault();
+  document.getElementById("loginForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
 
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value;
 
-  const res = await fetch(`${API}/api/auth/login`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password })
+    const res = await fetch(`${API}/api/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password })
+    });
+
+    const result = await res.json();
+    const msg = document.getElementById("msg");
+
+    if (res.ok) {
+      // store token
+      localStorage.setItem("token", result.token);
+
+      // store name for navbar (optional)
+      try {
+        const payload = JSON.parse(atob(result.token.split(".")[1]));
+        if (payload?.name) localStorage.setItem("name", payload.name);
+      } catch (_) {}
+
+      msg.innerText = "Login successful";
+      msg.className = "msg success";
+
+      // Redirect to gifts page (server side will accept token via query param)
+      setTimeout(() => {
+        window.location.href = "/gifts?token=" + result.token;
+      }, 600);
+    } else {
+      msg.innerText = result.message || "Login failed";
+      msg.className = "msg error";
+    }
   });
-
-  const result = await res.json();
-  const msg = document.getElementById("msg");
-
-  if (res.ok) {
-    localStorage.setItem("token", result.token);
-    msg.innerText = "Login successful";
-    msg.className = "msg success";
-    setTimeout(() => window.location.href = "/gifts?token=" + result.token, 700);
-  } else {
-    msg.innerText = result.message;
-    msg.className = "msg error";
-  }
-});
 </script>
+
+</body>
+</html>
