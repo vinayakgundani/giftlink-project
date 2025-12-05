@@ -3,120 +3,38 @@
 <head>
   <title>Gifts</title>
   <link rel="stylesheet" href="/style.css">
+
+  <style>
+    .gift-card {
+      background: white;
+      padding: 15px;
+      margin: 12px auto;
+      border-radius: 8px;
+      max-width: 400px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+    }
+  </style>
 </head>
+
 <body>
 
-  <%- include("partials/navbar") %>
+<%- include("partials/navbar") %>
 
+<h2 style="text-align:center;">Available Gifts</h2>
 
-  <div class="container">
-    <h1>Gifts</h1>
+<div style="max-width:600px; margin:auto;">
+  <% if (gifts.length === 0) { %>
+    <p>No gifts available.</p>
+  <% } %>
 
-    <div id="loading">Loading gifts…</div>
-    <div id="giftGrid" class="gift-grid" style="display:none;"></div>
-
-    <hr>
-
-    <div class="card" style="margin-top:18px;">
-      <h3>Add a New Gift</h3>
-      <input id="title" placeholder="Title">
-      <input id="category" placeholder="Category">
-      <input id="price" type="number" placeholder="Price">
-      <textarea id="description" placeholder="Description"></textarea>
-      <button id="addBtn">Add Gift</button>
-      <p id="giftMsg" class="msg"></p>
+  <% gifts.forEach(gift => { %>
+    <div class="gift-card">
+      <h3><%= gift.name %></h3>
+      <p><b>Category:</b> <%= gift.category || "N/A" %></p>
+      <p><b>Description:</b> <%= gift.description || "No description" %></p>
     </div>
-
-    <a href="/">Back</a>
-  </div>
-
-<script>
-(async function init() {
-  // token: check localStorage then fallback to token in URL (keeps backwards compatibility)
-  let token = localStorage.getItem("token");
-  if (!token) {
-    const q = new URLSearchParams(window.location.search);
-    token = q.get("token");
-  }
-  if (!token) {
-    window.location.href = "/login";
-    return;
-  }
-
-  // show username in dropdown if possible
-  try {
-    const payload = JSON.parse(atob(token.split(".")[1]));
-    document.getElementById("profileName").innerText = payload.name || "User";
-    document.getElementById("dropdownName").innerText = payload.name || "User";
-    document.getElementById("profileBtn").style.display = "inline-flex";
-  } catch (e) {}
-
-  try {
-    const res = await fetch("http://localhost:5000/api/gifts", {
-      headers: { "Authorization": "Bearer " + token }
-    });
-    if (!res.ok) {
-      const err = await res.json().catch(()=>({message:res.statusText}));
-      document.getElementById("loading").innerText = "Error: " + (err.message || res.statusText);
-      return;
-    }
-    const gifts = await res.json();
-    const grid = document.getElementById("giftGrid");
-    grid.innerHTML = "";
-    if (!gifts.length) grid.innerHTML = "<p>No gifts yet.</p>";
-    gifts.forEach(g => {
-      const el = document.createElement("div");
-      el.className = "gift-card";
-      el.innerHTML = `<h3>${escapeHtml(g.title || "")}</h3>
-                      <p><b>Category:</b> ${escapeHtml(g.category||"")}</p>
-                      <p><b>Price:</b> ₹${escapeHtml(String(g.price||"0"))}</p>
-                      <p>${escapeHtml(g.description||"")}</p>`;
-      grid.appendChild(el);
-    });
-    document.getElementById("loading").style.display = "none";
-    grid.style.display = "grid";
-  } catch (err) {
-    document.getElementById("loading").innerText = "Error loading gifts: " + err.message;
-  }
-})();
-
-document.getElementById("addBtn").addEventListener("click", async () => {
-  const title = document.getElementById("title").value.trim();
-  const category = document.getElementById("category").value.trim();
-  const price = document.getElementById("price").value.trim();
-  const description = document.getElementById("description").value.trim();
-  const token = localStorage.getItem("token") || new URLSearchParams(window.location.search).get("token");
-  const msg = document.getElementById("giftMsg");
-
-  if (!title || !category || !price || !description) {
-    msg.className = "msg error";
-    msg.innerText = "Please fill all fields.";
-    return;
-  }
-
-  try {
-    const res = await fetch("http://localhost:5000/api/gifts", {
-      method: "POST",
-      headers: { "Content-Type":"application/json", "Authorization":"Bearer " + token },
-      body: JSON.stringify({ title, category, price: Number(price), description })
-    });
-    const result = await res.json();
-    if (res.ok) {
-      msg.className = "msg success";
-      msg.innerText = "Gift added!";
-      setTimeout(()=>location.reload(),700);
-    } else {
-      msg.className = "msg error";
-      msg.innerText = result.message || "Failed";
-    }
-  } catch (err) {
-    msg.className = "msg error";
-    msg.innerText = "Error: " + err.message;
-  }
-});
-
-function escapeHtml(s){ return String(s).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;"); }
-</script>
+  <% }) %>
+</div>
 
 </body>
 </html>

@@ -1,41 +1,13 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Login</title>
-  <link rel="stylesheet" href="/style.css">
-</head>
-<body>
-
- <%- include("partials/navbar") %>
-
-
-  <div class="container">
-    <div class="card" style="max-width:400px; margin:auto;">
-      <h2>Login</h2>
-
-      <form id="loginForm">
-        <label>Email:</label>
-        <input id="email" type="email" required>
-
-        <label>Password:</label>
-        <input id="password" type="password" required>
-
-        <button type="submit">Login</button>
-      </form>
-
-      <p id="msg" class="msg"></p>
-      <a href="/">Back</a>
-    </div>
-  </div>
-
 <script>
+const API = "<%= process.env.BACKEND_URL %>";
+
 document.getElementById("loginForm").addEventListener("submit", async (e) => {
   e.preventDefault();
 
   const email = document.getElementById("email").value;
   const password = document.getElementById("password").value;
 
-  const res = await fetch("http://localhost:5000/api/auth/login", {
+  const res = await fetch(`${API}/api/auth/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, password })
@@ -48,17 +20,10 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
     localStorage.setItem("token", result.token);
     msg.innerText = "Login successful";
     msg.className = "msg success";
-
-    // KEEP previous redirect behaviour — include token in URL so frontend server reads it
-    setTimeout(() => {
-      window.location.href = "/gifts?token=" + result.token;
-    }, 700);
+    setTimeout(() => window.location.href = "/gifts?token=" + result.token, 700);
   } else {
     msg.innerText = result.message;
     msg.className = "msg error";
   }
 });
 </script>
-
-</body>
-</html>
