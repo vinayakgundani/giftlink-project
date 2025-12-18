@@ -5,14 +5,6 @@
   <link rel="stylesheet" href="/style.css">
 
   <style>
-    .gift-card {
-      background: white;
-      padding: 15px;
-      border-radius: 8px;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.15);
-    }
-
-    /* GRID LAYOUT */
     .gift-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
@@ -21,7 +13,12 @@
       margin: 20px auto;
       padding: 10px;
     }
-
+    .gift-card {
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+    }
     .add-card {
       background: #e8f4ff;
       padding: 20px;
@@ -30,7 +27,6 @@
       border-radius: 10px;
       display: none;
     }
-
     .search-card {
       background: #f1f1f1;
       padding: 15px;
@@ -38,7 +34,6 @@
       max-width: 450px;
       border-radius: 10px;
     }
-
     input, textarea {
       width: 100%;
       padding: 10px;
@@ -46,7 +41,6 @@
       border-radius: 6px;
       border: 1px solid #ccc;
     }
-
     button {
       padding: 10px;
       background: #007bff;
@@ -64,30 +58,20 @@
 
 <h2 style="text-align:center;">Available Gifts</h2>
 
-<!-- 🔍 SEARCH -->
 <div class="search-card">
-  <h3>Search Gifts</h3>
-  <input id="searchCategory" placeholder="Enter category (e.g. Kids)">
+  <input id="searchCategory" placeholder="Enter category">
   <button onclick="searchGifts()">Search</button>
-  <button onclick="location.reload()" style="background:#6c757d;margin-top:5px;">
-    Reset
-  </button>
 </div>
 
-<!-- ➕ ADD GIFT -->
 <div class="add-card" id="addGiftSection">
-  <h3>Add New Gift</h3>
-
-  <input id="giftTitle" placeholder="Gift Title">
+  <input id="giftTitle" placeholder="Title">
   <input id="giftCategory" placeholder="Category">
   <input id="giftPrice" type="number" placeholder="Price">
   <textarea id="giftDescription" placeholder="Description"></textarea>
-
   <button onclick="addGift()">Add Gift</button>
   <p id="addMsg"></p>
 </div>
 
-<!-- 🎁 GIFTS GRID -->
 <div id="giftList" class="gift-grid">
   <% if (gifts.length === 0) { %>
     <p>No gifts available.</p>
@@ -104,68 +88,50 @@
 </div>
 
 <script>
-const API = "http://localhost:5000";
+const API = window.location.origin;
 
 // show add gift only if logged in
-if (localStorage.getItem("token")) {
+const token = localStorage.getItem("token");
+if (token && token.startsWith("ey")) {
   document.getElementById("addGiftSection").style.display = "block";
 }
 
-// search gifts
 async function searchGifts() {
-  const category = document.getElementById("searchCategory").value.trim();
+  const category = searchCategory.value.trim();
   if (!category) return;
 
   const res = await fetch(`${API}/api/search?category=${category}`);
   const gifts = await res.json();
 
-  const container = document.getElementById("giftList");
-  container.innerHTML = "";
-
-  if (gifts.length === 0) {
-    container.innerHTML = "<p>No gifts found.</p>";
-    return;
-  }
-
+  giftList.innerHTML = "";
   gifts.forEach(gift => {
-    container.innerHTML += `
+    giftList.innerHTML += `
       <div class="gift-card">
         <h3>${gift.title}</h3>
-        <p><b>Category:</b> ${gift.category}</p>
-        <p><b>Price:</b> ₹${gift.price}</p>
+        <p>${gift.category}</p>
+        <p>₹${gift.price}</p>
         <p>${gift.description}</p>
-      </div>
-    `;
+      </div>`;
   });
 }
 
-// add gift
 async function addGift() {
-  const title = giftTitle.value;
-  const category = giftCategory.value;
-  const price = giftPrice.value;
-  const description = giftDescription.value;
-  const msg = addMsg;
-
-  const token = localStorage.getItem("token");
-
   const res = await fetch(`${API}/api/gifts`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       "Authorization": "Bearer " + token
     },
-    body: JSON.stringify({ title, category, price, description })
+    body: JSON.stringify({
+      title: giftTitle.value,
+      category: giftCategory.value,
+      price: giftPrice.value,
+      description: giftDescription.value
+    })
   });
 
-  const result = await res.json();
-
-  if (res.ok) {
-    msg.innerText = "Gift added!";
-    location.reload();
-  } else {
-    msg.innerText = result.message;
-  }
+  if (res.ok) location.reload();
+  else addMsg.innerText = "Error adding gift";
 }
 </script>
 
