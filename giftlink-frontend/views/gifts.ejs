@@ -8,10 +8,18 @@
     .gift-card {
       background: white;
       padding: 15px;
-      margin: 12px auto;
       border-radius: 8px;
-      max-width: 400px;
       box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+    }
+
+    /* GRID LAYOUT */
+    .gift-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 20px;
+      max-width: 1200px;
+      margin: 20px auto;
+      padding: 10px;
     }
 
     .add-card {
@@ -20,6 +28,7 @@
       margin: 20px auto;
       max-width: 450px;
       border-radius: 10px;
+      display: none;
     }
 
     .search-card {
@@ -55,48 +64,54 @@
 
 <h2 style="text-align:center;">Available Gifts</h2>
 
-<!-- 🔍 SEARCH BY CATEGORY (Task 6) -->
+<!-- 🔍 SEARCH -->
 <div class="search-card">
   <h3>Search Gifts</h3>
   <input id="searchCategory" placeholder="Enter category (e.g. Kids)">
   <button onclick="searchGifts()">Search</button>
-  <button onclick="resetGifts()" style="background:#6c757d;margin-top:5px;">
+  <button onclick="location.reload()" style="background:#6c757d;margin-top:5px;">
     Reset
   </button>
 </div>
 
-<!-- ADD NEW GIFT FORM (UNCHANGED) -->
-<div class="add-card">
+<!-- ➕ ADD GIFT -->
+<div class="add-card" id="addGiftSection">
   <h3>Add New Gift</h3>
 
-  <input id="giftName" placeholder="Gift Name">
+  <input id="giftTitle" placeholder="Gift Title">
   <input id="giftCategory" placeholder="Category">
+  <input id="giftPrice" type="number" placeholder="Price">
   <textarea id="giftDescription" placeholder="Description"></textarea>
 
   <button onclick="addGift()">Add Gift</button>
-
-  <p id="addMsg" style="margin-top:10px;"></p>
+  <p id="addMsg"></p>
 </div>
 
-<!-- GIFTS LIST -->
-<div id="giftList" style="max-width:600px; margin:auto;">
+<!-- 🎁 GIFTS GRID -->
+<div id="giftList" class="gift-grid">
   <% if (gifts.length === 0) { %>
     <p>No gifts available.</p>
   <% } %>
 
   <% gifts.forEach(gift => { %>
     <div class="gift-card">
-      <h3><%= gift.name %></h3>
-      <p><b>Category:</b> <%= gift.category || "N/A" %></p>
-      <p><b>Description:</b> <%= gift.description || "No description" %></p>
+      <h3><%= gift.title %></h3>
+      <p><b>Category:</b> <%= gift.category %></p>
+      <p><b>Price:</b> ₹<%= gift.price %></p>
+      <p><%= gift.description %></p>
     </div>
   <% }) %>
 </div>
 
 <script>
-const API = "http://localhost:5000"; // change to Render later
+const API = "http://localhost:5000";
 
-// 🔍 SEARCH FUNCTION (Task 6)
+// show add gift only if logged in
+if (localStorage.getItem("token")) {
+  document.getElementById("addGiftSection").style.display = "block";
+}
+
+// search gifts
 async function searchGifts() {
   const category = document.getElementById("searchCategory").value.trim();
   if (!category) return;
@@ -104,16 +119,6 @@ async function searchGifts() {
   const res = await fetch(`${API}/api/search?category=${category}`);
   const gifts = await res.json();
 
-  renderGifts(gifts);
-}
-
-// 🔄 RESET LIST
-function resetGifts() {
-  location.reload();
-}
-
-// 🧱 RENDER GIFTS DYNAMICALLY
-function renderGifts(gifts) {
   const container = document.getElementById("giftList");
   container.innerHTML = "";
 
@@ -125,27 +130,24 @@ function renderGifts(gifts) {
   gifts.forEach(gift => {
     container.innerHTML += `
       <div class="gift-card">
-        <h3>${gift.name}</h3>
-        <p><b>Category:</b> ${gift.category || "N/A"}</p>
-        <p><b>Description:</b> ${gift.description || "No description"}</p>
+        <h3>${gift.title}</h3>
+        <p><b>Category:</b> ${gift.category}</p>
+        <p><b>Price:</b> ₹${gift.price}</p>
+        <p>${gift.description}</p>
       </div>
     `;
   });
 }
 
-// ➕ ADD GIFT (UNCHANGED)
+// add gift
 async function addGift() {
-  const name = document.getElementById("giftName").value;
-  const category = document.getElementById("giftCategory").value;
-  const description = document.getElementById("giftDescription").value;
-  const msg = document.getElementById("addMsg");
+  const title = giftTitle.value;
+  const category = giftCategory.value;
+  const price = giftPrice.value;
+  const description = giftDescription.value;
+  const msg = addMsg;
 
   const token = localStorage.getItem("token");
-  if (!token) {
-    msg.innerText = "You must be logged in!";
-    msg.style.color = "red";
-    return;
-  }
 
   const res = await fetch(`${API}/api/gifts`, {
     method: "POST",
@@ -153,18 +155,16 @@ async function addGift() {
       "Content-Type": "application/json",
       "Authorization": "Bearer " + token
     },
-    body: JSON.stringify({ name, category, description })
+    body: JSON.stringify({ title, category, price, description })
   });
 
   const result = await res.json();
 
   if (res.ok) {
     msg.innerText = "Gift added!";
-    msg.style.color = "green";
-    setTimeout(() => location.reload(), 600);
+    location.reload();
   } else {
-    msg.innerText = result.message || "Error adding gift";
-    msg.style.color = "red";
+    msg.innerText = result.message;
   }
 }
 </script>

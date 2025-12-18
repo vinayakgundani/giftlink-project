@@ -18,22 +18,16 @@ app.get("/", (_, res) => res.render("home"));
 app.get("/login", (_, res) => res.render("login"));
 app.get("/register", (_, res) => res.render("register"));
 
-// Gifts list — server side fetch
+// ✅ Gifts page — PUBLIC
 app.get("/gifts", async (req, res) => {
-  const token = req.query.token || req.headers.authorization?.split(" ")[1] || null;
-
-  if (!token) {
-    return res.render("gifts", { gifts: [] });
-  }
-
   try {
-    const response = await axios.get(`${BACKEND_URL}/api/gifts`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
+    const response = await axios.get(`${BACKEND_URL}/api/gifts`);
     res.render("gifts", { gifts: response.data });
   } catch (err) {
     res.render("gifts", { gifts: [] });
   }
 });
 
-app.listen(3000, () => console.log("Frontend running at http://localhost:3000"));
+app.listen(3000, () =>
+  console.log("Frontend running at http://localhost:3000")
+);
