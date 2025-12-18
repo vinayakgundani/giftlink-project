@@ -1,19 +1,33 @@
 const Gift = require("../models/Gift");
 
-// GET all gifts
+// ✅ PUBLIC: Get all gifts
 exports.getGifts = async (req, res) => {
   try {
-    const gifts = await Gift.find();
+    const gifts = await Gift.find().sort({ createdAt: -1 });
     res.json(gifts);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Failed to fetch gifts" });
   }
 };
 
-// Add a new gift
+// ✅ PROTECTED: Add a new gift
 exports.addGift = async (req, res) => {
   try {
-    const gift = new Gift(req.body);
+    const { title, category, price, description } = req.body;
+
+    if (!title || !category || !price || !description) {
+      return res.status(400).json({
+        message: "Title, category, price and description are required",
+      });
+    }
+
+    const gift = new Gift({
+      title,
+      category,
+      price,
+      description,
+    });
+
     await gift.save();
     res.status(201).json(gift);
   } catch (err) {

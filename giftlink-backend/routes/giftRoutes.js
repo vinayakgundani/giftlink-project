@@ -3,10 +3,10 @@ const router = express.Router();
 const auth = require("../middleware/authMiddleware");
 const { getGifts, addGift } = require("../controllers/giftController");
 
-// GET all gifts (PROTECTED)
-router.get("/", auth, getGifts);
+// ✅ PUBLIC: View all gifts (before login)
+router.get("/", getGifts);
 
-// Add a gift (PROTECTED)
+// ✅ PROTECTED: Add gift (after login only)
 router.post("/", auth, addGift);
 
 module.exports = router;
