@@ -1,14 +1,17 @@
 // giftlink-backend/server.js
+require("dotenv").config({ path: __dirname + "/.env" });
+
 const express = require("express");
 const cors = require("cors");
 const morgan = require("morgan");
-require("dotenv").config();
+
 const connectDB = require("./config/db");
 
+// ✅ CREATE app FIRST
 const app = express();
 
 // IMPORTANT for Render — NO FALLBACK
-const PORT = process.env.PORT;  
+const PORT = process.env.PORT;
 
 // Connect DB
 connectDB();
@@ -20,19 +23,22 @@ app.use(express.urlencoded({ extended: true }));
 
 // CORS Handling
 const FRONTEND_URL = process.env.FRONTEND_URL || "*";
-app.use(cors({
-  origin: FRONTEND_URL === "*" ? "*" : FRONTEND_URL,
-  optionsSuccessStatus: 200
-}));
+app.use(
+  cors({
+    origin: FRONTEND_URL === "*" ? "*" : FRONTEND_URL,
+    optionsSuccessStatus: 200,
+  })
+);
 
-// Health Check (Render uses this sometimes)
+// Health Check
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok", time: new Date().toISOString() });
 });
 
-// Routes
+// ✅ Routes (AFTER app is created)
 app.use("/api/gifts", require("./routes/giftRoutes"));
 app.use("/api/auth", require("./routes/authRoutes"));
+app.use("/api/search", require("./routes/searchRoutes"));
 
 // 404 Handler
 app.use((req, res) => {
@@ -47,5 +53,5 @@ app.use((err, req, res, next) => {
 
 // Start Server
 app.listen(PORT, () => {
-  console.log(`Backend running on Render PORT = ${PORT}`);
+  console.log(`Backend running on PORT = ${PORT}`);
 });

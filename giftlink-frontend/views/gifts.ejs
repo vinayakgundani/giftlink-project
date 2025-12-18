@@ -22,6 +22,14 @@
       border-radius: 10px;
     }
 
+    .search-card {
+      background: #f1f1f1;
+      padding: 15px;
+      margin: 20px auto;
+      max-width: 450px;
+      border-radius: 10px;
+    }
+
     input, textarea {
       width: 100%;
       padding: 10px;
@@ -47,7 +55,17 @@
 
 <h2 style="text-align:center;">Available Gifts</h2>
 
-<!-- ADD NEW GIFT FORM -->
+<!-- 🔍 SEARCH BY CATEGORY (Task 6) -->
+<div class="search-card">
+  <h3>Search Gifts</h3>
+  <input id="searchCategory" placeholder="Enter category (e.g. Kids)">
+  <button onclick="searchGifts()">Search</button>
+  <button onclick="resetGifts()" style="background:#6c757d;margin-top:5px;">
+    Reset
+  </button>
+</div>
+
+<!-- ADD NEW GIFT FORM (UNCHANGED) -->
 <div class="add-card">
   <h3>Add New Gift</h3>
 
@@ -60,7 +78,8 @@
   <p id="addMsg" style="margin-top:10px;"></p>
 </div>
 
-<div style="max-width:600px; margin:auto;">
+<!-- GIFTS LIST -->
+<div id="giftList" style="max-width:600px; margin:auto;">
   <% if (gifts.length === 0) { %>
     <p>No gifts available.</p>
   <% } %>
@@ -77,6 +96,44 @@
 <script>
 const API = "http://localhost:5000"; // change to Render later
 
+// 🔍 SEARCH FUNCTION (Task 6)
+async function searchGifts() {
+  const category = document.getElementById("searchCategory").value.trim();
+  if (!category) return;
+
+  const res = await fetch(`${API}/api/search?category=${category}`);
+  const gifts = await res.json();
+
+  renderGifts(gifts);
+}
+
+// 🔄 RESET LIST
+function resetGifts() {
+  location.reload();
+}
+
+// 🧱 RENDER GIFTS DYNAMICALLY
+function renderGifts(gifts) {
+  const container = document.getElementById("giftList");
+  container.innerHTML = "";
+
+  if (gifts.length === 0) {
+    container.innerHTML = "<p>No gifts found.</p>";
+    return;
+  }
+
+  gifts.forEach(gift => {
+    container.innerHTML += `
+      <div class="gift-card">
+        <h3>${gift.name}</h3>
+        <p><b>Category:</b> ${gift.category || "N/A"}</p>
+        <p><b>Description:</b> ${gift.description || "No description"}</p>
+      </div>
+    `;
+  });
+}
+
+// ➕ ADD GIFT (UNCHANGED)
 async function addGift() {
   const name = document.getElementById("giftName").value;
   const category = document.getElementById("giftCategory").value;
