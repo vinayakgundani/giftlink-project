@@ -1,57 +1,54 @@
-// giftlink-backend/server.js
-require("dotenv").config({ path: __dirname + "/.env" });
-
 const express = require("express");
 const cors = require("cors");
-const morgan = require("morgan");
+const path = require("path");
+const axios = require("axios");
+require("dotenv").config();
 
 const connectDB = require("./config/db");
 
-// ✅ CREATE app FIRST
 const app = express();
-
-// IMPORTANT for Render — NO FALLBACK
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 5000;
 
 // Connect DB
 connectDB();
 
 // Middleware
-app.use(morgan("tiny"));
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// CORS Handling
-const FRONTEND_URL = process.env.FRONTEND_URL || "*";
-app.use(
-  cors({
-    origin: FRONTEND_URL === "*" ? "*" : FRONTEND_URL,
-    optionsSuccessStatus: 200,
-  })
-);
+// 🔹 View engine (Frontend)
+app.set("view engine", "ejs");
+app.set("views", path.join(__dirname, "../giftlink-frontend/views"));
+app.use(express.static(path.join(__dirname, "../giftlink-frontend/public")));
 
-// Health Check
-app.get("/api/health", (req, res) => {
-  res.json({ status: "ok", time: new Date().toISOString() });
-});
-
-// ✅ Routes (AFTER app is created)
+// 🔹 API Routes
 app.use("/api/gifts", require("./routes/giftRoutes"));
 app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/search", require("./routes/searchRoutes"));
 
-// 404 Handler
+// 🔹 Frontend Routes
+app.get("/", (req, res) => {
+  res.render("home");
+});
+
+app.get("/gifts", async (req, res) => {
+  try {
+    const response = await axios.get(
+      `${req.protocol}://${req.get("host")}/api/gifts`
+    );
+    res.render("gifts", { gifts: response.data });
+  } catch (err) {
+    res.render("gifts", { gifts: [] });
+  }
+});
+
+// 🔹 404 handler
 app.use((req, res) => {
   res.status(404).json({ message: "Route not found" });
 });
 
-// Global Error Handler
-app.use((err, req, res, next) => {
-  console.error("Server Error:", err);
-  res.status(500).json({ message: err.message || "Server error" });
-});
-
-// Start Server
+// Start server
 app.listen(PORT, () => {
-  console.log(`Backend running on PORT = ${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
