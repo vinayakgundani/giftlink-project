@@ -7,18 +7,25 @@
   <style>
     .gift-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
       gap: 20px;
       max-width: 1200px;
       margin: 20px auto;
       padding: 10px;
     }
+
     .gift-card {
       background: white;
       padding: 15px;
       border-radius: 8px;
       box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+      transition: transform 0.2s ease;
     }
+
+    .gift-card:hover {
+      transform: translateY(-3px);
+    }
+
     .add-card {
       background: #e8f4ff;
       padding: 20px;
@@ -27,13 +34,16 @@
       border-radius: 10px;
       display: none;
     }
+
     .search-card {
       background: #f1f1f1;
       padding: 15px;
       margin: 20px auto;
       max-width: 450px;
       border-radius: 10px;
+      text-align: center;
     }
+
     input, textarea {
       width: 100%;
       padding: 10px;
@@ -41,13 +51,19 @@
       border-radius: 6px;
       border: 1px solid #ccc;
     }
+
     button {
-      padding: 10px;
+      padding: 10px 14px;
       background: #007bff;
       border: none;
       border-radius: 6px;
       color: white;
       cursor: pointer;
+    }
+
+    button.secondary {
+      background: #6c757d;
+      margin-left: 6px;
     }
   </style>
 </head>
@@ -58,23 +74,30 @@
 
 <h2 style="text-align:center;">Available Gifts</h2>
 
+<!-- 🔍 SEARCH -->
 <div class="search-card">
-  <input id="searchCategory" placeholder="Enter category">
+  <input id="searchCategory" placeholder="Enter category (e.g. Kids)">
   <button onclick="searchGifts()">Search</button>
+  <button class="secondary" onclick="location.reload()">Reset</button>
 </div>
 
+<!-- ➕ ADD GIFT (ONLY AFTER LOGIN) -->
 <div class="add-card" id="addGiftSection">
-  <input id="giftTitle" placeholder="Title">
+  <h3>Add New Gift</h3>
+
+  <input id="giftTitle" placeholder="Gift Title">
   <input id="giftCategory" placeholder="Category">
   <input id="giftPrice" type="number" placeholder="Price">
   <textarea id="giftDescription" placeholder="Description"></textarea>
+
   <button onclick="addGift()">Add Gift</button>
   <p id="addMsg"></p>
 </div>
 
+<!-- 🎁 GIFTS GRID -->
 <div id="giftList" class="gift-grid">
   <% if (gifts.length === 0) { %>
-    <p>No gifts available.</p>
+    <p style="grid-column:1/-1;text-align:center;">No gifts available.</p>
   <% } %>
 
   <% gifts.forEach(gift => { %>
@@ -88,14 +111,15 @@
 </div>
 
 <script>
-const API = window.location.origin;
+const API = "https://giftlink-project.onrender.com";
 
-// show add gift only if logged in
+// ✅ Show add gift only if token exists
 const token = localStorage.getItem("token");
 if (token && token.startsWith("ey")) {
   document.getElementById("addGiftSection").style.display = "block";
 }
 
+// 🔍 Search gifts
 async function searchGifts() {
   const category = searchCategory.value.trim();
   if (!category) return;
@@ -104,17 +128,25 @@ async function searchGifts() {
   const gifts = await res.json();
 
   giftList.innerHTML = "";
+
+  if (gifts.length === 0) {
+    giftList.innerHTML =
+      `<p style="grid-column:1/-1;text-align:center;">No gifts found.</p>`;
+    return;
+  }
+
   gifts.forEach(gift => {
     giftList.innerHTML += `
       <div class="gift-card">
         <h3>${gift.title}</h3>
-        <p>${gift.category}</p>
-        <p>₹${gift.price}</p>
+        <p><b>Category:</b> ${gift.category}</p>
+        <p><b>Price:</b> ₹${gift.price}</p>
         <p>${gift.description}</p>
       </div>`;
   });
 }
 
+// ➕ Add gift
 async function addGift() {
   const res = await fetch(`${API}/api/gifts`, {
     method: "POST",
@@ -125,13 +157,18 @@ async function addGift() {
     body: JSON.stringify({
       title: giftTitle.value,
       category: giftCategory.value,
-      price: giftPrice.value,
+      price: Number(giftPrice.value),
       description: giftDescription.value
     })
   });
 
-  if (res.ok) location.reload();
-  else addMsg.innerText = "Error adding gift";
+  const result = await res.json();
+
+  if (res.ok) {
+    location.reload();
+  } else {
+    addMsg.innerText = result.message || "Error adding gift";
+  }
 }
 </script>
 

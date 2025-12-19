@@ -1,33 +1,21 @@
 const express = require("express");
-const axios = require("axios");
 const path = require("path");
 require("dotenv").config();
 
 const app = express();
+const PORT = process.env.PORT || 3000;
 
-const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:5000";
-
-app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public")));
 
 app.set("view engine", "ejs");
+app.set("views", path.join(__dirname, "views"));
 
-// Pages
 app.get("/", (_, res) => res.render("home"));
 app.get("/login", (_, res) => res.render("login"));
 app.get("/register", (_, res) => res.render("register"));
+app.get("/gifts", (_, res) => res.render("gifts", { gifts: [] }));
 
-// ✅ Gifts page — PUBLIC
-app.get("/gifts", async (req, res) => {
-  try {
-    const response = await axios.get(`${BACKEND_URL}/api/gifts`);
-    res.render("gifts", { gifts: response.data });
-  } catch (err) {
-    res.render("gifts", { gifts: [] });
-  }
-});
-
-app.listen(3000, () =>
-  console.log("Frontend running at http://localhost:3000")
+app.listen(PORT, () =>
+  console.log(`Frontend running on port ${PORT}`)
 );
